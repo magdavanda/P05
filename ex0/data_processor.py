@@ -84,6 +84,7 @@ def main():
     input2: str = "Hello"
     input3: str = "foo"
     input4: list[int] = [1, 2, 3, 4, 5]
+    input5: list[str] = ["Hello", "Nexus", "World"]
 
     print(f" Trying to validate input: '{input1}': {num.validate(input1)}")
     print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
@@ -97,14 +98,22 @@ def main():
     except Exception as e:
         print(f" Got exception: {e}")
 
-    print(f"Processing data: {input4}")
+    print(f" Processing data: {input4}")
+    values: int = 3
+    print(f" Extracting {values} values...")
+
     num.ingest(input4)
+    for value in range(0, values):
+        print(f" Numeric value {value}: {num.output()[0]}")
     # print(num.output())
 
-    print("\nTesting Text Processor...")
-    text = TextProcessor()
+    # print("\nTesting Text Processor...")
+    # text = TextProcessor()
 
-    print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
+    # print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
+    # print(f" Processing data: {input5}")
+
+    # print(f"Extracting 1 value...")
 
 
 if __name__ == "__main__":
