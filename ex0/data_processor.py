@@ -4,7 +4,7 @@ from typing import Any
 
 class DataProcessor(ABC):
     def __init__(self) -> None:
-        self._storage: list[int, str] = []
+        self._storage: list[int | str] = []
         self.processing_rank: int = 0
 
     @abstractmethod
@@ -37,7 +37,7 @@ class NumericProcessor(DataProcessor):
             self._storage.append(data)
             self.processing_rank += 1
         else:
-            raise Exception("Invalid input")
+            raise ValueError("Improper numeric data")
 
 
 class TextProcessor(DataProcessor):
@@ -62,7 +62,7 @@ class TextProcessor(DataProcessor):
                 self._storage.append(data)
                 self.processing_rank += 1
         else:
-            raise Exception("Invalid input")
+            raise Exception("Improper text data")
 
 
 class LogProcessor(DataProcessor):
@@ -79,18 +79,32 @@ class LogProcessor(DataProcessor):
 def main():
     print("=== Code Nexus - Data Processor ===\n")
     print("Testing Numeric Processor...")
-    abc = NumericProcessor()
-    input1 = 42
-    input2 = "Hello"
-    answer1 = abc.validate(input1)
-    answer2 = abc.ingest(input2)
-    # answer2 = abc.validate(input2)
+    num = NumericProcessor()
+    input1: int = 42
+    input2: str = "Hello"
+    input3: str = "foo"
+    input4: list[int] = [1, 2, 3, 4, 5]
 
-    abc.ingest(input1)
-    print(f" Trying to validate input: '{input1}': {answer1}")
-    print(f" Trying to validate input: '{input2}': {answer2}")
-    print(abc._storage)
-    print(abc.processing_rank)
+    print(f" Trying to validate input: '{input1}': {num.validate(input1)}")
+    print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
+
+    print(
+            f" Test invalid ingestion of string {input3}"
+            f" without prior validation:"
+            )
+    try:
+        num.ingest(input3)
+    except Exception as e:
+        print(f" Got exception: {e}")
+
+    print(f"Processing data: {input4}")
+    num.ingest(input4)
+    # print(num.output())
+
+    print("\nTesting Text Processor...")
+    text = TextProcessor()
+
+    print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
 
 
 if __name__ == "__main__":
