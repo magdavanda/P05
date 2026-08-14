@@ -34,8 +34,13 @@ class NumericProcessor(DataProcessor):
     def ingest(self, data: int | float | list[int] | list[float]
                | list[int | float]):
         if self.validate(data) is True:
-            self._storage.append(data)
-            self.processing_rank += 1
+            if isinstance(data, list):
+                for item in data:
+                    self._storage.append(item)
+                    self.processing_rank += 1
+            else:
+                self._storage.append(data)
+                self.processing_rank += 1
         else:
             raise ValueError("Improper numeric data")
 
@@ -53,10 +58,10 @@ class TextProcessor(DataProcessor):
             return False
 
     def ingest(self, data: str | list[str]):
-        if data.validate() is True:
+        if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self._storage.append(data)
+                    self._storage.append(item)
                     self.processing_rank += 1
             else:
                 self._storage.append(data)
@@ -99,21 +104,24 @@ def main():
         print(f" Got exception: {e}")
 
     print(f" Processing data: {input4}")
+    num.ingest(input4)
     values: int = 3
     print(f" Extracting {values} values...")
 
-    num.ingest(input4)
     for value in range(0, values):
-        print(f" Numeric value {value}: {num.output()[0]}")
-    # print(num.output())
+        print(f" Numeric value {value}: {num.output()[value]}")
 
-    # print("\nTesting Text Processor...")
-    # text = TextProcessor()
+    print("\nTesting Text Processor...")
+    text = TextProcessor()
 
-    # print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
-    # print(f" Processing data: {input5}")
+    print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
+    print(f" Processing data: {input5}")
+    text.ingest(input5)
 
-    # print(f"Extracting 1 value...")
+    txt_value = 3
+    print(f"Extracting {txt_value} value...")
+    for value in range(0, txt_value):
+        print(f"Text value {value}: {text.output()[value]} ")
 
 
 if __name__ == "__main__":
