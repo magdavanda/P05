@@ -4,7 +4,7 @@ from typing import Any
 
 class DataProcessor(ABC):
     def __init__(self) -> None:
-        self._storage: list[int | str] = []
+        self._storage: list[tuple[int, str]] = []
         self.processing_rank: int = 0
 
     @abstractmethod
@@ -16,7 +16,8 @@ class DataProcessor(ABC):
         ...
 
     def output(self) -> tuple[int, str]:
-        return tuple(self._storage)
+        self._storage.pop(0)
+        return self._storage
 
 
 class NumericProcessor(DataProcessor):
@@ -32,15 +33,15 @@ class NumericProcessor(DataProcessor):
             return False
 
     def ingest(self, data: int | float | list[int] | list[float]
-               | list[int | float]):
+               | list[int | float]) -> None:
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self._storage.append(item)
                     self.processing_rank += 1
+                    self._storage.append((self.processing_rank, str(item)))
             else:
-                self._storage.append(data)
                 self.processing_rank += 1
+                self._storage.append((self.processing_rank, str(data)))
         else:
             raise ValueError("Improper numeric data")
 
@@ -57,7 +58,7 @@ class TextProcessor(DataProcessor):
         else:
             return False
 
-    def ingest(self, data: str | list[str]):
+    def ingest(self, data: str | list[str]) -> None:
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
@@ -72,12 +73,20 @@ class TextProcessor(DataProcessor):
 
 class LogProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
-        if isinstance(data, dict[str, str] | list[str]):
-            return True
+        if isinstance(data, dict):
+            if all(isinstance(item, str) for item in data):
+                return True
+            else:
+                return False
+        elif isinstance(data, list):
+            if all(isinstance(item, str) for item in data):
+                return True
+            else:
+                return False
         else:
             return False
 
-    def ingest(self, data: dict[str, str] | list[str]):
+    def ingest(self, data: dict[str, str] | list[str]) -> None:
         self._storage.append(data)
 
 
