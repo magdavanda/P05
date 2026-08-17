@@ -163,8 +163,30 @@ class DataStream:
             for value in range(0, nb):
                 try:
                     output_storage.append(processor.output())
-                except IndexError as e:
-                    print(e)
+                except IndexError:
+                    print("Errrrrorrrr")
+                    break
+            plugin.process_output(output_storage)
+
+class CSVExportPlugin:
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        print("CSV Output:")
+        csv_list: list = []
+        for item in data:
+            csv_list.append(item[1])
+        print(",".join(csv_list))
+
+class JSONExportPlugin:
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        print("JSON Output:")
+        json_dict: dict = {}
+        json_list: list = []
+        for item in data:
+            json_dict[item[0]] = item[1]
+        for key, value in json_dict.items():
+            json_list.append(f'"item_{key}": "{value}"')
+        print("{", end="")
+        print(",".join(json_list), end="}\n")
 
 
 def main() -> None:
@@ -202,9 +224,9 @@ def main() -> None:
     stream.process_stream(input)
     stream.print_processors_stats()
 
-    cons_num: int = 3
-    cons_txt: int = 2
-    cons_log: int = 1
+    cons_num: int = 0
+    cons_txt: int = 0
+    cons_log: int = 0
 
     print(
             f"Consume some elements from the data processors: "
@@ -222,12 +244,16 @@ def main() -> None:
 
     stream.print_processors_stats()
 
-    try:
-        print(log.output())
-        print(log.output())
-    except IndexError:
-        print("Empty storage")
-        return
+    csv_plugin = CSVExportPlugin()
+    json_plugin = JSONExportPlugin()
+
+    print("\n====TEST====")
+    print(f"Numeric storage: {num._storage}")
+    print(f"Text storage: {text._storage}")
+    print(f"Log storage: {log._storage}")
+    print("====TEST====\n")
+
+    stream.output_pipeline(2, json_plugin)
 
 
 if __name__ == "__main__":
