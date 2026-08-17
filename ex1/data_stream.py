@@ -7,6 +7,7 @@ class DataProcessor(ABC):
     def __init__(self) -> None:
         self._storage: list[tuple[int, str]] = []
         self.processing_rank: int = 0
+        self.name: str = ""
 
     @abstractmethod
     def validate(self, data: Any) -> bool:
@@ -22,6 +23,10 @@ class DataProcessor(ABC):
 
 
 class NumericProcessor(DataProcessor):
+    def __init__(self) -> None:
+        super().__init__()
+        self.name = "Numeric Processor"
+
     def validate(self, data: Any) -> bool:
         if isinstance(data, int | float):
             return True
@@ -48,6 +53,10 @@ class NumericProcessor(DataProcessor):
 
 
 class TextProcessor(DataProcessor):
+    def __init__(self) -> None:
+        super().__init__()
+        self.name = "Text Processor"
+
     def validate(self, data: Any) -> bool:
         if isinstance(data, str):
             return True
@@ -73,6 +82,10 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
+    def __init__(self) -> None:
+        super().__init__()
+        self.name = "Log Processor"
+
     def validate(self, data: Any) -> bool:
         if isinstance(data, dict):
             if all(isinstance(key, str) and isinstance(value, str) for key,
@@ -108,25 +121,39 @@ class DataStream:
         self._processors: list[DataProcessor] = []
 
     def register_processor(self, proc: DataProcessor) -> None:
-        self._processors.append(proc)
+        if not isinstance(proc, DataProcessor):
+            raise TypeError("No processor found")
+        else:
+            self._processors.append(proc)
+        # print(f"Registering {proc.name}")
 
     def process_stream(self, stream: list[typing. Any]) -> None:
         for data in stream:
             for processor in self._processors:
                 if processor.validate(data) is True:
-                    print("Nice")
+                    processor.ingest(data)
                     break
             else:
-                print("Not nice")
+                print(
+                        f"DataStream error - Can't process element "
+                        f"in stream: '{data}'"
+                        )
 
     def print_processors_stats(self) -> None:
-        ...
+        print(" == DataStream statistics ==")
+        if self._processors == []:
+            print("No processor found, no data")
+        for processor in self._processors:
+            print(
+                    f"{processor.name}: total "
+                    f"{processor.processing_rank} items processed, "
+                    f"remaining {len(processor._storage)} on processor"
+                    )
 
 
-def main():
+def main() -> None:
     print("=== Code Nexus - Data Stream ===\n")
     print("Initialize Data Stream...")
-    print(" == DataStream statistics ==")
 
     input: list[Any] = ['Hello world',
                         [3.14, -1, 2.71],
@@ -138,19 +165,46 @@ def main():
 
     stream = DataStream()
 
+    stream.print_processors_stats()
+    print()
+
     num = NumericProcessor()
-    text = TextProcessor()
-    # log = LogProcessor()
-
     stream.register_processor(num)
-    stream.register_processor(text)
-    # stream.register_processor(log)
-
+    print(f"Registering {num.name}")
+    print()
+    print(f"Sending first batch of data on stream: {input}")
     stream.process_stream(input)
+    stream.print_processors_stats()
+    print()
+    print("Registering other data processors")
+    print("Send the same batch again")
 
-# ============================
-#
-# ============================
+    text = TextProcessor()
+    log = LogProcessor()
+    stream.register_processor(text)
+    stream.register_processor(log)
+    stream.process_stream(input)
+    stream.print_processors_stats()
+
+    cons_num: int = 3
+    cons_txt: int = 2
+    cons_log: int = 1
+
+    print(
+            f"Consume some elements from the data processors: "
+            f"Numeric {cons_num}, Text {cons_txt}, Log {cons_log}"
+          )
+
+    for value in range(0, cons_num):
+        num.output()
+
+    for value in range(0, cons_txt):
+        text.output()
+
+    for value in range(0, cons_log):
+        log.output()
+
+    stream.print_processors_stats()
 
 
 if __name__ == "__main__":
