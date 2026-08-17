@@ -18,11 +18,8 @@ class DataProcessor(ABC):
         ...
 
     def output(self) -> tuple[int, str]:
-        if not self._storage:
-            raise IndexError("Storage is empty")
-        else:
-            current_data = self._storage.pop(0)
-            return current_data
+        current_data = self._storage.pop(0)
+        return current_data
 
 
 class NumericProcessor(DataProcessor):
@@ -201,13 +198,25 @@ def main() -> None:
           )
 
     for value in range(0, cons_num):
-        num.output()
+        try:
+            num.output()
+        except IndexError:
+            print("Error: Data storage is empty")
+            break
 
     for value in range(0, cons_txt):
-        text.output()
+        try:
+            text.output()
+        except IndexError:
+            print("Error: Data storage is empty")
+            break
 
     for value in range(0, cons_log):
-        log.output()
+        try:
+            log.output()
+        except IndexError:
+            print("Error: Data storage is empty")
+            break
 
     stream.print_processors_stats()
 

@@ -18,11 +18,8 @@ class DataProcessor(ABC):
         ...
 
     def output(self) -> tuple[int, str]:
-        if not self._storage:
-            raise IndexError("Storage is empty")
-        else:
-            current_data = self._storage.pop(0)
-            return current_data
+        current_data = self._storage.pop(0)
+        return current_data
 
 
 class NumericProcessor(DataProcessor):
@@ -225,8 +222,12 @@ def main() -> None:
 
     stream.print_processors_stats()
 
-    print(log.output())
-    print(log.output())
+    try:
+        print(log.output())
+        print(log.output())
+    except IndexError:
+        print("Empty storage")
+        return
 
 
 if __name__ == "__main__":
