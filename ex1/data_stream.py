@@ -102,20 +102,39 @@ class LogProcessor(DataProcessor):
             raise ValueError("Improper log data")
 
 
-def main():
-    print("=== Code Nexus - Data Processor ===\n")
-    print("Testing Numeric Processor...")
-    num = NumericProcessor()
-    input1: int = 42
-    input2: str = "Hello"
-    input3: str = "foo"
-    input4: list[int] = [1, 2, 3, 4, 5]
-    input5: list[str] = ["Hello", "Nexus", "World"]
-    input6: list[dict[str, str]] = [{"log_level": "NOTICE",
-                                    "log_message": "Connection to server"},
-                                    {"log_level": "ERROR",
-                                    "log_message": "Unauthorized access!!"}]
+class DataStream:
+    def __init__(self) -> None:
+        self._processors: list[DataProcessor] = []
 
+    def register_processor(self, proc: DataProcessor) -> None:
+        self._processors.append(proc)
+
+    def process_stream(self, stream: list[typing.Any]) -> None:
+        ...
+
+    def print_processors_stats(self) -> None:
+        ...
+
+
+def main():
+    print("=== Code Nexus - Data Stream ===\n")
+
+    input: list[Any] = ['Hello world',
+                        [3.14, -1, 2.71],
+                        [{'log_level': 'WARNING',
+                          'log_message': 'Telnet access! Use ssh instead'},
+                         {'log_level': 'INFO',
+                          'log_message': 'User wil isconnected'}],
+                        42, ['Hi', 'five']]
+
+    num = NumericProcessor()
+    text = TextProcessor()
+    log = LogProcessor()
+
+# ============================
+# Numeric Processor Testing
+# ============================
+    print("Testing Numeric Processor...")
     print(f" Trying to validate input: '{input1}': {num.validate(input1)}")
     print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
 
@@ -138,8 +157,10 @@ def main():
         print(f" Numeric value {value}: {num.output()[1]}")
     # print(num._storage)
 
+# ============================
+# Text Processor Testing
+# ============================
     print("\nTesting Text Processor...")
-    text = TextProcessor()
 
     print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
     print(f" Processing data: {input5}")
@@ -152,8 +173,10 @@ def main():
         print(f" Text value {value}: {text.output()[1]}")
     # print(text._storage)
 
+# ============================
+# Log Processor Testing
+# ============================
     print("\nTesting Log Processor...")
-    log = LogProcessor()
     print(f" Trying to validate input '{input2}': {log.validate(input2)} ")
     print(f" Processing data: {input6}")
     log.ingest(input6)
