@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Protocol
+import typing
 
 
 class DataProcessor(ABC):
@@ -118,77 +119,114 @@ class LogProcessor(DataProcessor):
             raise ValueError("Improper log data")
 
 
-def main() -> None:
-    print("=== Code Nexus - Data Processor ===\n")
+class ExportPlugin(Protocol):
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        ...
 
-    input1: int = 42
-    input2: str = "Hello"
-    input3: str = "foo"
-    input4: list[int] = [1, 2, 3, 4, 5]
-    input5: list[str] = ["Hello", "Nexus", "World"]
-    input6: list[dict[str, str]] = [{"log_level": "NOTICE",
-                                    "log_message": "Connection to server"},
-                                    {"log_level": "ERROR",
-                                    "log_message": "Unauthorized access!!"}]
+
+class DataStream:
+    def __init__(self) -> None:
+        self._processors: list[DataProcessor] = []
+
+    def register_processor(self, proc: DataProcessor) -> None:
+        """ add processors to the list of processors (register)"""
+        if not isinstance(proc, DataProcessor):
+            raise TypeError("No processor found")
+        else:
+            self._processors.append(proc)
+        # print(f"Registering {proc.name}")
+
+    def process_stream(self, stream: list[typing. Any]) -> None:
+        for data in stream:
+            for processor in self._processors:
+                if processor.validate(data) is True:
+                    processor.ingest(data)
+                    break
+            else:
+                print(
+                        f"DataStream error - Can't process element "
+                        f"in stream: '{data}'"
+                        )
+
+    def print_processors_stats(self) -> None:
+        print(" == DataStream statistics ==")
+        if not self._processors:
+            print("No processor found, no data")
+            return
+        for processor in self._processors:
+            print(
+                    f"{processor.name}: total "
+                    f"{processor.processing_rank} items processed, "
+                    f"remaining {len(processor._storage)} on processor"
+                    )
+
+    def output_pipeline(self, nb: int, plugin: ExportPlugin) -> None:
+        for processor in self._processors:
+            output_storage: list = []
+            for value in range(0, nb):
+                try:
+                    output_storage.append(processor.output())
+                except IndexError as e:
+                    print(e)
+
+
+def main() -> None:
+    print("=== Code Nexus - Data Stream ===\n")
+    print("Initialize Data Stream...")
+
+    input: list[Any] = ['Hello world',
+                        [3.14, -1, 2.71],
+                        [{'log_level': 'WARNING',
+                          'log_message': 'Telnet access! Use ssh instead'},
+                         {'log_level': 'INFO',
+                          'log_message': 'User wil isconnected'}],
+                        42, ['Hi', 'five']]
+
+    stream = DataStream()
+
+    stream.print_processors_stats()
+    print()
 
     num = NumericProcessor()
+    stream.register_processor(num)
+    print(f"Registering {num.name}")
+    print()
+    print(f"Sending first batch of data on stream: {input}")
+    stream.process_stream(input)
+    stream.print_processors_stats()
+    print()
+    print("Registering other data processors")
+    print("Send the same batch again")
+
     text = TextProcessor()
     log = LogProcessor()
+    stream.register_processor(text)
+    stream.register_processor(log)
+    stream.process_stream(input)
+    stream.print_processors_stats()
 
-# ============================
-# Numeric Processor Testing
-# ============================
-    print("Testing Numeric Processor...")
-    print(f" Trying to validate input: '{input1}': {num.validate(input1)}")
-    print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
+    cons_num: int = 3
+    cons_txt: int = 2
+    cons_log: int = 1
 
     print(
-            f" Test invalid ingestion of string {input3}"
-            f" without prior validation:"
-            )
-    try:
-        num.ingest(input3)
-    except Exception as e:
-        print(f" Got exception: {e}")
+            f"Consume some elements from the data processors: "
+            f"Numeric {cons_num}, Text {cons_txt}, Log {cons_log}"
+          )
 
-    print(f" Processing data: {input4}")
-    num.ingest(input4)
-    values: int = 3
-    print(f" Extracting {values} values...")
+    for value in range(0, cons_num):
+        num.output()
 
-    # print(num._storage)
-    for value in range(0, values):
-        print(f" Numeric value {value}: {num.output()[1]}")
-    # print(num._storage)
+    for value in range(0, cons_txt):
+        text.output()
 
-# ============================
-# Text Processor Testing
-# ============================
-    print("\nTesting Text Processor...")
+    for value in range(0, cons_log):
+        log.output()
 
-    print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
-    print(f" Processing data: {input5}")
-    text.ingest(input5)
+    stream.print_processors_stats()
 
-    txt_value = 1
-    print(f" Extracting {txt_value} value...")
-    # print(text._storage)
-    for value in range(0, txt_value):
-        print(f" Text value {value}: {text.output()[1]}")
-    # print(text._storage)
-
-# ============================
-# Log Processor Testing
-# ============================
-    print("\nTesting Log Processor...")
-    print(f" Trying to validate input '{input2}': {log.validate(input2)} ")
-    print(f" Processing data: {input6}")
-    log.ingest(input6)
-    log_value = 2
-    print(f" Extracting {log_value} values...")
-    # print(log._storage)
-    for value in range(0, log_value):
-        print(f" Log entry {value}: {log.output()[1]}")
+    print(log.output())
+    print(log.output())
 
 
 if __name__ == "__main__":

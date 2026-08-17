@@ -18,8 +18,11 @@ class DataProcessor(ABC):
         ...
 
     def output(self) -> tuple[int, str]:
-        current_data = self._storage.pop(0)
-        return current_data
+        if not self._storage:
+            raise IndexError("Storage is empty")
+        else:
+            current_data = self._storage.pop(0)
+            return current_data
 
 
 class NumericProcessor(DataProcessor):
@@ -121,6 +124,7 @@ class DataStream:
         self._processors: list[DataProcessor] = []
 
     def register_processor(self, proc: DataProcessor) -> None:
+        """ add processors to the list of processors (register)"""
         if not isinstance(proc, DataProcessor):
             raise TypeError("No processor found")
         else:
@@ -141,8 +145,9 @@ class DataStream:
 
     def print_processors_stats(self) -> None:
         print(" == DataStream statistics ==")
-        if self._processors == []:
+        if not self._processors:
             print("No processor found, no data")
+            return
         for processor in self._processors:
             print(
                     f"{processor.name}: total "
