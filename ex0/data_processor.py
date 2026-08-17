@@ -16,8 +16,8 @@ class DataProcessor(ABC):
         ...
 
     def output(self) -> tuple[int, str]:
-        self._storage.pop(0)
-        return self._storage
+        current_data = self._storage.pop(0)
+        return current_data
 
 
 class NumericProcessor(DataProcessor):
@@ -62,32 +62,42 @@ class TextProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self._storage.append(item)
                     self.processing_rank += 1
+                    self._storage.append((self.processing_rank, item))
             else:
-                self._storage.append(data)
                 self.processing_rank += 1
+                self._storage.append((self.processing_rank, data))
         else:
-            raise Exception("Improper text data")
+            raise ValueError("Improper text data")
 
 
 class LogProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
         if isinstance(data, dict):
-            if all(isinstance(item, str) for item in data):
+            if all(isinstance(key, str) and isinstance(value,str) for key, value in data.items()):
                 return True
             else:
                 return False
         elif isinstance(data, list):
-            if all(isinstance(item, str) for item in data):
-                return True
-            else:
-                return False
+            for item in data:
+                if not self.validate(item):
+                    return False
+            return True
         else:
             return False
 
-    def ingest(self, data: dict[str, str] | list[str]) -> None:
-        self._storage.append(data)
+    def ingest(self, data: dict[str, str] | list[dict[str, str]]) -> None:
+        if self.validate(data) is True:
+            if isinstance(data, list):
+                for item in data:
+                    self.processing_rank += 1
+                    self._storage.append((self.processing_rank, str(item)))
+
+            elif isinstance(data, dict):
+                self.processing_rank += 1
+                self._storage.append((self.processing_rank, str(data)))
+        else:
+            raise ValueError("Improper log data")
 
 
 def main():
@@ -99,6 +109,9 @@ def main():
     input3: str = "foo"
     input4: list[int] = [1, 2, 3, 4, 5]
     input5: list[str] = ["Hello", "Nexus", "World"]
+    input6: list[dict[str, str]] = [{'log_level': 'NOTICE', 'log_message': 'Connection to server'}, {'log_level': 'ERROR',
+    'log_message': 'Unauthorized access!!'}]
+
 
     print(f" Trying to validate input: '{input1}': {num.validate(input1)}")
     print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
@@ -117,9 +130,11 @@ def main():
     values: int = 3
     print(f" Extracting {values} values...")
 
+    # print(num._storage)
     for value in range(0, values):
-        print(f" Numeric value {value}: {num.output()[value]}")
-
+        print(f" Numeric value {value}: {num.output()[1]}")
+    # print(num._storage)
+    
     print("\nTesting Text Processor...")
     text = TextProcessor()
 
@@ -127,10 +142,24 @@ def main():
     print(f" Processing data: {input5}")
     text.ingest(input5)
 
-    txt_value = 3
-    print(f"Extracting {txt_value} value...")
+    txt_value = 1
+    print(f" Extracting {txt_value} value...")
+    # print(text._storage)
     for value in range(0, txt_value):
-        print(f"Text value {value}: {text.output()[value]} ")
+        print(f" Text value {value}: {text.output()[1]}")
+    # print(text._storage)
+
+    print("\nTesting Log Processor...")
+    log = LogProcessor()
+    print(f" Trying to validate input '{input2}': {log.validate(input2)} ")
+    print(f" Processing data: {input6}")
+    log.ingest(input6)
+    log_value = 2
+    print(f" Extracting {log_value} values...")
+    print(log._storage)
+    for value in range(0, log_value):
+        print(f" Log entry {value}: {log.output()[1]}")
+
 
 
 if __name__ == "__main__":
