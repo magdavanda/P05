@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+import typing
 
 
 class DataProcessor(ABC):
@@ -109,8 +110,14 @@ class DataStream:
     def register_processor(self, proc: DataProcessor) -> None:
         self._processors.append(proc)
 
-    def process_stream(self, stream: list[typing.Any]) -> None:
-        ...
+    def process_stream(self, stream: list[typing. Any]) -> None:
+        for data in stream:
+            for processor in self._processors:
+                if processor.validate(data) is True:
+                    print("Nice")
+                    break
+            else:
+                print("Not nice")
 
     def print_processors_stats(self) -> None:
         ...
@@ -118,6 +125,8 @@ class DataStream:
 
 def main():
     print("=== Code Nexus - Data Stream ===\n")
+    print("Initialize Data Stream...")
+    print(" == DataStream statistics ==")
 
     input: list[Any] = ['Hello world',
                         [3.14, -1, 2.71],
@@ -127,64 +136,21 @@ def main():
                           'log_message': 'User wil isconnected'}],
                         42, ['Hi', 'five']]
 
+    stream = DataStream()
+
     num = NumericProcessor()
     text = TextProcessor()
-    log = LogProcessor()
+    # log = LogProcessor()
+
+    stream.register_processor(num)
+    stream.register_processor(text)
+    # stream.register_processor(log)
+
+    stream.process_stream(input)
 
 # ============================
-# Numeric Processor Testing
+#
 # ============================
-    print("Testing Numeric Processor...")
-    print(f" Trying to validate input: '{input1}': {num.validate(input1)}")
-    print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
-
-    print(
-            f" Test invalid ingestion of string {input3}"
-            f" without prior validation:"
-            )
-    try:
-        num.ingest(input3)
-    except Exception as e:
-        print(f" Got exception: {e}")
-
-    print(f" Processing data: {input4}")
-    num.ingest(input4)
-    values: int = 3
-    print(f" Extracting {values} values...")
-
-    # print(num._storage)
-    for value in range(0, values):
-        print(f" Numeric value {value}: {num.output()[1]}")
-    # print(num._storage)
-
-# ============================
-# Text Processor Testing
-# ============================
-    print("\nTesting Text Processor...")
-
-    print(f" Trying to validate input: '{input1}': {text.validate(input1)}")
-    print(f" Processing data: {input5}")
-    text.ingest(input5)
-
-    txt_value = 1
-    print(f" Extracting {txt_value} value...")
-    # print(text._storage)
-    for value in range(0, txt_value):
-        print(f" Text value {value}: {text.output()[1]}")
-    # print(text._storage)
-
-# ============================
-# Log Processor Testing
-# ============================
-    print("\nTesting Log Processor...")
-    print(f" Trying to validate input '{input2}': {log.validate(input2)} ")
-    print(f" Processing data: {input6}")
-    log.ingest(input6)
-    log_value = 2
-    print(f" Extracting {log_value} values...")
-    # print(log._storage)
-    for value in range(0, log_value):
-        print(f" Log entry {value}: {log.output()[1]}")
 
 
 if __name__ == "__main__":
