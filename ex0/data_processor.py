@@ -42,11 +42,11 @@ class NumericProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self.processing_rank += 1
                     self._storage.append((self.processing_rank, str(item)))
+                    self.processing_rank += 1
             else:
-                self.processing_rank += 1
                 self._storage.append((self.processing_rank, str(data)))
+                self.processing_rank += 1
         else:
             raise ValueError("Improper numeric data")
 
@@ -71,11 +71,11 @@ class TextProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self.processing_rank += 1
                     self._storage.append((self.processing_rank, item))
+                    self.processing_rank += 1
             else:
-                self.processing_rank += 1
                 self._storage.append((self.processing_rank, data))
+                self.processing_rank += 1
         else:
             raise ValueError("Improper text data")
 
@@ -104,13 +104,13 @@ class LogProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self.processing_rank += 1
                     log_string: str = ": ".join(item.values())
                     self._storage.append((self.processing_rank, log_string))
+                    self.processing_rank += 1
 
             elif isinstance(data, dict):
-                self.processing_rank += 1
                 self._storage.append((self.processing_rank, str(data)))
+                self.processing_rank += 1
         else:
             raise ValueError("Improper log data")
 

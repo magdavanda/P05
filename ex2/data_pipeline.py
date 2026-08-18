@@ -43,11 +43,11 @@ class NumericProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self.processing_rank += 1
                     self._storage.append((self.processing_rank, str(item)))
+                    self.processing_rank += 1
             else:
-                self.processing_rank += 1
                 self._storage.append((self.processing_rank, str(data)))
+                self.processing_rank += 1
         else:
             raise ValueError("Improper numeric data")
 
@@ -72,11 +72,11 @@ class TextProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self.processing_rank += 1
                     self._storage.append((self.processing_rank, item))
+                    self.processing_rank += 1
             else:
-                self.processing_rank += 1
                 self._storage.append((self.processing_rank, data))
+                self.processing_rank += 1
         else:
             raise ValueError("Improper text data")
 
@@ -105,13 +105,13 @@ class LogProcessor(DataProcessor):
         if self.validate(data) is True:
             if isinstance(data, list):
                 for item in data:
-                    self.processing_rank += 1
                     log_string: str = ": ".join(item.values())
                     self._storage.append((self.processing_rank, log_string))
+                    self.processing_rank += 1
 
             elif isinstance(data, dict):
-                self.processing_rank += 1
                 self._storage.append((self.processing_rank, str(data)))
+                self.processing_rank += 1
         else:
             raise ValueError("Improper log data")
 
@@ -164,8 +164,7 @@ class DataStream:
                 try:
                     output_storage.append(processor.output())
                 except IndexError:
-                    print("Errrrrorrrr")
-                    break
+                    break    
             plugin.process_output(output_storage)
 
 class CSVExportPlugin:
@@ -186,12 +185,12 @@ class JSONExportPlugin:
         for key, value in json_dict.items():
             json_list.append(f'"item_{key}": "{value}"')
         print("{", end="")
-        print(",".join(json_list), end="}\n")
+        print(", ".join(json_list), end="}\n")
 
 
 def main() -> None:
     print("=== Code Nexus - Data Stream ===\n")
-    print("Initialize Data Stream...")
+    print("Initialize Data Stream...\n")
 
     input: list[Any] = ['Hello world',
                         [3.14, -1, 2.71],
@@ -206,54 +205,54 @@ def main() -> None:
     stream.print_processors_stats()
     print()
 
+    print(f"Registering Processors\n")
     num = NumericProcessor()
-    stream.register_processor(num)
-    print(f"Registering {num.name}")
-    print()
-    print(f"Sending first batch of data on stream: {input}")
-    stream.process_stream(input)
-    stream.print_processors_stats()
-    print()
-    print("Registering other data processors")
-    print("Send the same batch again")
-
     text = TextProcessor()
     log = LogProcessor()
+
+    stream.register_processor(num)
     stream.register_processor(text)
     stream.register_processor(log)
+    
+
+    print(f"Sending first batch of data on stream: {input}")
+    print()
     stream.process_stream(input)
     stream.print_processors_stats()
-
-    cons_num: int = 0
-    cons_txt: int = 0
-    cons_log: int = 0
-
-    print(
-            f"Consume some elements from the data processors: "
-            f"Numeric {cons_num}, Text {cons_txt}, Log {cons_log}"
-          )
-
-    for value in range(0, cons_num):
-        num.output()
-
-    for value in range(0, cons_txt):
-        text.output()
-
-    for value in range(0, cons_log):
-        log.output()
-
-    stream.print_processors_stats()
+    print()
 
     csv_plugin = CSVExportPlugin()
     json_plugin = JSONExportPlugin()
 
-    print("\n====TEST====")
-    print(f"Numeric storage: {num._storage}")
-    print(f"Text storage: {text._storage}")
-    print(f"Log storage: {log._storage}")
-    print("====TEST====\n")
+    print()
 
-    stream.output_pipeline(2, json_plugin)
+    data_to_process: int = 3
+    print(f"Send {data_to_process} processed data from each processor to a CSV plugin:")
+    stream.output_pipeline(data_to_process, csv_plugin)
+    print()
+
+    stream.print_processors_stats()
+    print()
+
+    input2: list[Any] = [21, ['I love AI', 'LLMs are wonderful', 'Stay healthy'],
+     [{'log_level': 'ERROR', 'log_message': '500 server crash'},
+      {'log_level': 'NOTICE', 'log_message': 'Certificate expires in 10 days'}],
+       [32, 42, 64, 84, 128, 168], 'World hello']
+
+    print(f"Send another batch of data: {input2}")
+
+    print()
+    stream.process_stream(input2)
+    stream.print_processors_stats()
+
+    print(num._storage)
+    print(text._storage)
+    print(log._storage)
+
+    data_to_process = 5
+    print(f"\nSend {data_to_process} processed data from each processor to a JSON plugin:")
+    stream.output_pipeline(data_to_process, json_plugin)
+    stream.print_processors_stats()
 
 
 if __name__ == "__main__":
