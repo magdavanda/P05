@@ -193,7 +193,7 @@ def main() -> None:
     cons_log: int = 1
 
     print(
-            f"Consume some elements from the data processors: "
+            f"\nConsume some elements from the data processors: "
             f"Numeric {cons_num}, Text {cons_txt}, Log {cons_log}"
           )
 
@@ -201,25 +201,24 @@ def main() -> None:
         try:
             num.output()
         except IndexError:
-            print("Error: Data storage is empty")
+            print(f" {num.name} Error: Data storage is empty")
             break
 
     for value in range(0, cons_txt):
         try:
             text.output()
         except IndexError:
-            print("Error: Data storage is empty")
+            print(f" {text.name} Error: Data storage is empty")
             break
 
     for value in range(0, cons_log):
         try:
             log.output()
         except IndexError:
-            print("Error: Data storage is empty")
+            print(f" {log.name} Error: Data storage is empty")
             break
 
     stream.print_processors_stats()
-
 
 if __name__ == "__main__":
     main()

@@ -140,7 +140,7 @@ def main() -> None:
     print(f" Trying to validate input: '{input2}': {num.validate(input2)}")
 
     print(
-            f" Test invalid ingestion of string {input3}"
+            f" Test invalid ingestion of string '{input3}'"
             f" without prior validation:"
             )
     try:
@@ -158,7 +158,7 @@ def main() -> None:
         try:
             print(f" Numeric value {value}: {num.output()[1]}")
         except IndexError:
-            print("Error: Data storage is empty")
+            print(f" {num.name} Error: Data storage is empty")
             break
 
 # ============================
@@ -177,7 +177,7 @@ def main() -> None:
         try:
             print(f" Text value {value}: {text.output()[1]}")
         except IndexError:
-            print("Error: Data storage is empty")
+            print(f" {text.name} Error: Data storage is empty")
             break
     # print(text._storage)
 
@@ -195,7 +195,7 @@ def main() -> None:
         try:
             print(f" Log entry {value}: {log.output()[1]}")
         except IndexError:
-            print("Error: Data storage is empty")
+            print(f" {log.name} Error: Data storage is empty")
             break
 
 
